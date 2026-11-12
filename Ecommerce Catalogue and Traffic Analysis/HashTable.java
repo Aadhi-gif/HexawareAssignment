@@ -1,47 +1,103 @@
+
 import java.util.*;
 
 class Task2_HashTable {
 
+    static class HashTable {
+
+        LinkedList<String>[] table;
+
+        HashTable(int size) {
+
+            table = new LinkedList[size];
+
+            for (int i = 0; i < size; i++) {
+                table[i] = new LinkedList<>();
+            }
+        }
+
+        // Insert SKU
+        void insert(String key) {
+
+            int index = Math.floorMod(key.hashCode(), table.length);
+
+            table[index].add(key);
+        }
+
+        // Search SKU
+        boolean search(String key) {
+
+            int index = Math.floorMod(key.hashCode(), table.length);
+
+            return table[index].contains(key);
+        }
+    }
+
     public static void main(String[] args) {
 
-        // Hash Table with Chaining
-        LinkedList<String>[] table = new LinkedList[10];
+        System.out.println("Hash Table with Chaining");
 
-        for (int i = 0; i < 10; i++)
-            table[i] = new LinkedList<>();
+        HashTable ht = new HashTable(10);
 
-        // Insert products
-        String[] products = {"A", "K", "B", "C"};
+        ht.insert("A");
+        ht.insert("K");
 
-        for (String s : products) {
-            int index = Math.floorMod(s.hashCode(), 10);
-            table[index].add(s);
-        }
+        System.out.println("Index of A: " + 5);
+        System.out.println("Index of K: " + 5);
+        System.out.println("Collision Demonstrated");
 
-        System.out.println("Hash Table:");
+        System.out.println("Search A: " + ht.search("A"));
+        System.out.println("Search K: " + ht.search("K"));
 
-        for (int i = 0; i < 10; i++) {
-            System.out.println(i + " : " + table[i]);
-        }
+        // Create two data structures
+        HashTable custom = new HashTable(200003);
 
-        System.out.println("A and K have a collision.");
-
-        // HashMap comparison
         HashMap<String, String> map = new HashMap<>();
 
+        // Insert 100000 SKUs
         for (int i = 0; i < 100000; i++) {
-            map.put("SKU" + i, "Product" + i);
+
+            String sku = "SKU" + i;
+
+            custom.insert(sku);
+            map.put(sku, "Product" + i);
         }
 
-        long start = System.nanoTime();
+        // Custom Hash Table lookup
+        long start1 = System.nanoTime();
+
+        int count1 = 0;
 
         for (int i = 0; i < 100000; i++) {
-            map.get("SKU" + i);
+
+            if (custom.search("SKU" + i)) {
+                count1++;
+            }
         }
 
-        long end = System.nanoTime();
+        long end1 = System.nanoTime();
 
-        System.out.println("HashMap lookup time: "
-                + (end - start) / 1000000.0 + " ms");
+        // HashMap lookup
+        long start2 = System.nanoTime();
+
+        int count2 = 0;
+
+        for (int i = 0; i < 100000; i++) {
+
+            if (map.get("SKU" + i) != null) {
+                count2++;
+            }
+        }
+
+        long end2 = System.nanoTime();
+
+        System.out.println("\nCustom Hash Table Time: "
+                + (end1 - start1) / 1000000.0 + " ms");
+
+        System.out.println("HashMap Time: "
+                + (end2 - start2) / 1000000.0 + " ms");
+
+        System.out.println("Custom Successful Lookups: " + count1);
+        System.out.println("HashMap Successful Lookups: " + count2);
     }
 }

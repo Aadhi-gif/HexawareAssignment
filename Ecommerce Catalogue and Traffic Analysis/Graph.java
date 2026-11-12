@@ -1,102 +1,149 @@
+
 import java.util.*;
 
 class Task3_Graph {
 
-    public static void main(String[] args) {
+    static ArrayList<Integer>[] graph;
+    static int vertices = 4;
 
-        int vertices = 4;
+    // Create graph
+    static void addEdge(int from, int to) {
+        graph[from].add(to);
+    }
 
-        ArrayList<Integer>[] graph = new ArrayList[vertices];
-
-        for (int i = 0; i < vertices; i++)
-            graph[i] = new ArrayList<>();
-
-        // 0 = Shipping
-        // 1 = Inventory
-        // 2 = Pricing
-        // 3 = Cart
-
-        graph[0].add(1);
-        graph[1].add(2);
-        graph[2].add(3);
+    // BFS Topological Sorting
+    static void bfs() {
 
         int[] indegree = new int[vertices];
 
         for (int i = 0; i < vertices; i++) {
-            for (int j : graph[i])
+            for (int j : graph[i]) {
                 indegree[j]++;
+            }
         }
 
         Queue<Integer> queue = new LinkedList<>();
 
         for (int i = 0; i < vertices; i++) {
-            if (indegree[i] == 0)
+            if (indegree[i] == 0) {
                 queue.add(i);
+            }
         }
 
         int count = 0;
 
-        System.out.println("Deployment Order:");
+        System.out.print("BFS Order: ");
 
         while (!queue.isEmpty()) {
 
             int current = queue.poll();
 
             System.out.print(current + " ");
+
             count++;
 
             for (int j : graph[current]) {
 
                 indegree[j]--;
 
-                if (indegree[j] == 0)
+                if (indegree[j] == 0) {
                     queue.add(j);
+                }
             }
         }
 
-        if (count != vertices)
+        if (count != vertices) {
             System.out.println("\nCircular Dependency Found");
-        else
-            System.out.println("\nNo Circular Dependency");
+        } else {
+            System.out.println();
+        }
+    }
+
+    // DFS Topological Sorting
+    static boolean dfs(int vertex, int[] visited,
+                       Stack<Integer> stack) {
+
+        visited[vertex] = 1;
+
+        for (int j : graph[vertex]) {
+
+            if (visited[j] == 1) {
+                return false;
+            }
+
+            if (visited[j] == 0) {
+
+                if (!dfs(j, visited, stack)) {
+                    return false;
+                }
+            }
+        }
+
+        visited[vertex] = 2;
+
+        stack.push(vertex);
+
+        return true;
+    }
+
+    static void dfsSort() {
+
+        int[] visited = new int[vertices];
+
+        Stack<Integer> stack = new Stack<>();
+
+        for (int i = 0; i < vertices; i++) {
+
+            if (visited[i] == 0) {
+
+                if (!dfs(i, visited, stack)) {
+                    System.out.println("Cycle Found");
+                    return;
+                }
+            }
+        }
+
+        System.out.print("DFS Order: ");
+
+        while (!stack.isEmpty()) {
+            System.out.print(stack.pop() + " ");
+        }
+
+        System.out.println();
+    }
+
+    public static void main(String[] args) {
+
+        graph = new ArrayList[vertices];
+
+        for (int i = 0; i < vertices; i++) {
+            graph[i] = new ArrayList<>();
+        }
+
+        // 0 = Shipping
+        // 1 = Inventory
+        // 2 = Pricing
+        // 3 = Cart
+
+        addEdge(0, 1);
+        addEdge(1, 2);
+        addEdge(2, 3);
+
+        System.out.println("BFS Deployment Order:");
+        bfs();
+
+        System.out.println("DFS Deployment Order:");
+        dfsSort();
 
         // Add circular dependency
-        graph[3].add(0);
+        System.out.println("\nAdding Circular Dependency");
 
-        System.out.println("After adding circular dependency:");
+        addEdge(3, 0);
 
-        // Check cycle again
-        int[] degree = new int[vertices];
+        System.out.println("BFS Cycle Detection:");
+        bfs();
 
-        for (int i = 0; i < vertices; i++) {
-            for (int j : graph[i])
-                degree[j]++;
-        }
-
-        Queue<Integer> q = new LinkedList<>();
-
-        for (int i = 0; i < vertices; i++) {
-            if (degree[i] == 0)
-                q.add(i);
-        }
-
-        int processed = 0;
-
-        while (!q.isEmpty()) {
-            int current = q.poll();
-            processed++;
-
-            for (int j : graph[current]) {
-                degree[j]--;
-
-                if (degree[j] == 0)
-                    q.add(j);
-            }
-        }
-
-        System.out.println(
-                processed != vertices
-                        ? "Circular Dependency Found"
-                        : "No Circular Dependency"
-        );
+        System.out.println("DFS Cycle Detection:");
+        dfsSort();
     }
 }
